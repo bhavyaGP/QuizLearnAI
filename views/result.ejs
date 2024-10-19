@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Analysis</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #fffbea;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #fffbcc;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        h2 {
+            margin-top: 20px;
+            color: #333;
+        }
+
+        p {
+            line-height: 1.6;
+        }
+
+        .quiz-button {
+            display: inline-block;
+            background-color: #f7c02c;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            text-decoration: none;
+        }
+
+        .quiz-button:hover {
+            background-color: #d4a720;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            text-decoration: none;
+            color: #d4a720;
+            font-size: 16px;
+        }
+
+        .back-link:hover {
+            color: white;
+            background-color: #d4a720;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .summary-cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: space-around;
+        }
+
+        .summary-card {
+            background-color: #fffbea;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: calc(50% - 20px);
+            margin-bottom: 20px;
+            cursor: pointer;
+            border: 2px solid #f7c02c;
+        }
+
+        .summary-card h3 {
+            margin-top: 0;
+            color: #08408e;
+        }
+
+        .card-content {
+            display: none;
+            margin-top: 10px;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 20px;
+            background-color: #333;
+            animation: blink 0.7s infinite;
+        }
+
+        @keyframes blink {
+            0% {
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .summary-card {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Analysis</h1>
+
+        <div class="button-container">
+            <a href="/take-quiz" class="quiz-button">Start Quiz</a>
+        </div>
+
+        <div id="summary-section">
+            <h2>Summary</h2>
+            <div class="summary-cards" id="summary-cards">
+            </div>
+        </div>
+
+        <a class="back-link" href="/">Go Back</a>
+    </div>
+
+    <script>
+        const summary = <%- JSON.stringify(summary) %>;
+
+        function createSummaryCards() {
+            const summaryCards = document.getElementById('summary-cards');
+            summaryCards.innerHTML = '';
+
+            Object.entries(summary).forEach(([topic, content], index) => {
+                const card = document.createElement('div');
+                card.className = 'summary-card';
+                card.innerHTML = `
+                    <h3>${topic.charAt(0).toUpperCase() + topic.slice(1)}</h3>
+                    <div class="card-content" id="content-${index}">
+                        <span class="cursor"></span>
+                    </div>`;
+                card.addEventListener('click', () => toggleCard(index, content));
+                summaryCards.appendChild(card);
+            });
+        }
+
+        function toggleCard(index, content) {
+            const contentElement = document.getElementById(`content-${index}`);
+            const isVisible = contentElement.style.display === 'block';
+
+            if (!isVisible) {
+                contentElement.style.display = 'block';
+                animateText(`content-${index}`, content, 0);
+            } else {
+                contentElement.style.display = 'none';
+                contentElement.innerHTML = '<span class="cursor"></span>';
+            }
+        }
+
+        function animateText(elementId, text, index) {
+            const element = document.getElementById(elementId);
+            if (index < text.length) {
+                element.innerHTML = text.slice(0, index + 1) + '<span class="cursor"></span>';
+                setTimeout(() => {
+                    animateText(elementId, text, index + 1);
+                }, 30);
+            } else {
+                element.innerHTML = text;
+            }
+        }
+
+        window.onload = createSummaryCards;
+    </script>
+</body>
+
+</html>
+    

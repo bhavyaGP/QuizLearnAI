@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Quiz Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #063c6c;
+            --secondary-color: #106099;
+            --text-color: #333;
+            --bg-color: #f9f7f1;
+            --container-bg: #ffffff;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, var(--primary-color), var(--bg-color));
+            color: var(--text-color);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: var(--primary-color);
+            padding: 10px 20px;
+            text-align: center;
+        }
+        .navbar img {
+            height: 150px;
+        }
+
+
+        .hero {
+            background: linear-gradient(135deg, var(--primary-color), var(--bg-color));
+            padding: 50px 30px;
+            text-align: center;
+            color: var(--text-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--text-color);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 30px;
+            background: var(--container-bg);
+            border-radius: 12px;
+            box-shadow: 0 8px 16px var(--shadow-color);
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--text-color);
+            font-size: 2rem;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-color);
+            font-weight: 600;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            background-color: var(--container-bg);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(157, 147, 105, 0.5);
+        }
+
+        input[type="submit"] {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            border: none;
+            padding: 12px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        input[type="submit"]:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        input[type="submit"]:active {
+            transform: translateY(1px);
+        }
+
+        .particle {
+            position: absolute;
+            background-color: rgb(246, 246, 246);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: floating 6s ease-in-out infinite;
+        }
+
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes floating {
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(15px) rotate(5deg);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 30px 15px;
+                padding: 20px;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <img src="./newimg.png" alt="Logo">
+    </nav>
+
+    <div class="hero">
+        <h1 style="color: white;">AI-powered YouTube Quiz Generator</h1>
+        <p style="color: white;">Generate interactive quizzes and summaries from any YouTube video in seconds using cutting-edge AI.</p>
+        <div class="container">
+            <h1>Create Your Quiz</h1>
+            <form action="/generate" method="POST">
+                <label for="youtubeLink">YouTube Video Link:</label>
+                <input type="text" id="youtubeLink" name="youtubeLink" placeholder="Enter the YouTube video link"
+                    required>
+
+                <label for="quizNo">Number of Quiz Questions:</label>
+                <input type="number" id="quizNo" name="quizNo" min="1" max="20"
+                    placeholder="Enter the number of quiz questions" required>
+
+                <label for="difficulty">Select Difficulty Level:</label>
+                <select id="difficulty" name="difficulty" required>
+                    <option value="easy">Easy</option>
+                    <option value="medium">Medium</option>
+                    <option value="hard">Hard</option>
+                </select>
+
+                <input type="submit" value="Generate Summary and Quiz" style="color: white;">
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function createParticles() {
+            const particleCount = 20;
+            const hero = document.querySelector('.hero');
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                particle.style.width = `${Math.random() * 10 + 5}px`;
+                particle.style.height = particle.style.width;
+                particle.style.top = `${Math.random() * 100}%`;
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.animationDuration = `${Math.random() * 4 + 4}s`;
+                particle.style.animationDelay = `${Math.random() * 2}s`;
+                hero.appendChild(particle);
+            }
+        }
+
+        createParticles();
+    </script>
+</body>
+
+</html>

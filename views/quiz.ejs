@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Quiz</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #fff9e6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Circular Timer Styles */
+        #timer {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 0 auto;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+
+        .circle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: #fff;
+            clip-path: circle(50%);
+        }
+
+        .mask {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: #034d7f;
+            clip-path: inset(0 0 50% 0);
+            animation: rotate 60s linear forwards;
+        }
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        #time {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: bold;
+            font-size: 24px;
+            z-index: 1;
+        }
+
+        .question {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #fff4cc;
+        }
+
+        .options {
+            list-style-type: none;
+            padding: 0;
+            margin: 10px 0;
+        }
+
+        .options li {
+            margin-bottom: 10px;
+        }
+
+        .options input[type="radio"] {
+            display: none;
+        }
+
+        .options label {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background-color: #f9e2a3;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+        }
+
+        .options label::before {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid #ffcc00;
+            margin-right: 10px;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .options input[type="radio"]:checked + label::before {
+            background-color: #ffcc00;
+            transform: scale(1.1);
+        }
+
+        .options input[type="radio"]:checked + label {
+            background-color: #ffe89b;
+            border-color: #ffcc00;
+        }
+
+        .options label:hover {
+            background-color: #ffe89b;
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: #ffcc00;
+            color: #333;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #e6b800;
+        }
+
+        .progress-bar {
+            width: 100%;
+            background-color: #f4f4f4;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 10px;
+            background-color: #ffcc00;
+            width: 0;
+            transition: width 1s linear;
+        }
+
+        .correct {
+            background-color: #d4edda !important;
+            border-color: #28a745 !important;
+        }
+
+        .incorrect {
+            background-color: #f8d7da !important;
+            border-color: #dc3545 !important;
+        }
+
+        .score {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 20px;
+            color: #333;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Real-Time Quiz</h1>
+        <div id="timer">
+            <div class="mask"></div>
+            <div class="circle"></div>
+            <div id="time">0:00</div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress" id="progress"></div>
+        </div>
+
+        <div id="quiz-container">
+            <% quiz.easy.forEach((question, index) => { %>
+                <div class="question" data-index="<%= index %>">
+                    <h3>Question <%= index + 1 %></h3>
+                    <p><%= question.question %></p>
+                    <ul class="options">
+                        <% question.options.forEach((option) => { %>
+                            <li>
+                                <input type="radio" id="q<%= index %>-<%= option %>" name="q<%= index %>" value="<%= option %>">
+                                <label for="q<%= index %>-<%= option %>"><%= option %></label>
+                            </li>
+                        <% }); %>
+                    </ul>
+                </div>
+            <% }); %>
+        </div>
+        <button id="submit-quiz" onclick="submitQuiz()">Submit Quiz</button>
+        <div id="score" class="score" style="display:none;"></div>
+    </div>
+
+    <script>
+        const quiz = <%- JSON.stringify(quiz.easy) %>;
+        const quizTime = quiz.length * 60;
+        let timeLeft = quizTime;
+        let score = 0;
+
+        document.getElementById("time").innerHTML = formatTime(quizTime);
+        let timerInterval = setInterval(updateTimer, 1000);
+
+        function updateTimer() {
+            timeLeft--;
+            document.getElementById("time").innerHTML = formatTime(timeLeft);
+
+            const progressBar = document.getElementById("progress");
+            progressBar.style.width = ((quizTime - timeLeft) / quizTime) * 100 + "%";
+
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                submitQuiz();
+            }
+        }
+
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`;
+        }
+
+        function submitQuiz() {
+            clearInterval(timerInterval);
+            
+            quiz.forEach((question, index) => {
+                const selectedOption = document.querySelector(`input[name="q${index}"]:checked`);
+                const correctAnswer = question.answer;
+
+                if (selectedOption) {
+                    const label = selectedOption.parentElement.querySelector('label');
+                    if (selectedOption.value === correctAnswer) {
+                        label.classList.add('correct');
+                        score++;
+                    } else {
+                        label.classList.add('incorrect');
+                        document.querySelector(`input[name="q${index}"][value="${correctAnswer}"]`).parentElement.querySelector('label').classList.add('correct');
+                    }
+                } else {
+                    // If no option was selected, mark the correct answer
+                    document.querySelector(`input[name="q${index}"][value="${correctAnswer}"]`).parentElement.querySelector('label').classList.add('correct');
+                }
+
+                // Disable all options after submission
+                document.querySelectorAll(`input[name="q${index}"]`).forEach(input => input.disabled = true);
+            });
+
+            document.getElementById("score").innerHTML = `Score: ${score}/${quiz.length}`;
+            document.getElementById("score").style.display = "block";
+            document.getElementById("submit-quiz").style.display = "none";
+        }
+    </script>
+</body>
+
+</html>
