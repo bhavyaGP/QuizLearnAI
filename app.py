@@ -1,7 +1,7 @@
 from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api.formatters import TextFormatter
-import re
 import json
+import re
 from langchain_groq import ChatGroq
 import sys
 
@@ -27,12 +27,16 @@ def get_transcript(youtube_url):
     except Exception as e:
         return {"error": f"Error fetching transcript: {str(e)}"}, None
 
-
+# Updated function for cleaning JSON content
 def clean_response_content(response_content):
-    cleaned_content = response_content.replace("'", '"')
-    cleaned_content = re.sub(r',\s*([\]}])', r'\1', cleaned_content)
-    return cleaned_content.strip()
-
+    try:
+        # Attempt to load the response content directly as JSON
+        return json.loads(response_content)
+    except json.JSONDecodeError:
+        # If it's not valid JSON, attempt a basic cleanup
+        cleaned_content = response_content.replace("'", '"')
+        cleaned_content = re.sub(r',\s*([\]}])', r'\1', cleaned_content)
+        return json.loads(cleaned_content)
 
 def generate_summary_and_quiz(transcript, num_questions, language, difficulty):
     try:
@@ -71,27 +75,24 @@ def generate_summary_and_quiz(transcript, num_questions, language, difficulty):
         llm = ChatGroq(
             model="llama-3.1-70b-versatile",
             temperature=0,
-            # groq_api_key="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"
-            groq_api_key="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"
+            groq_api_key="APIKEY HERE"   
         )
         response = llm.invoke(prompt)
 
         if hasattr(response, 'content'):
             response_content = response.content
-
+            # Clean and parse the response content into valid JSON
             cleaned_content = clean_response_content(response_content)
 
             try:
-                response_json = json.loads(cleaned_content)
-                return response_json
+                return cleaned_content  # Already a JSON dictionary
             except json.JSONDecodeError as e:
-                return {"error": f"JSONDecodeError: {e}", "cleaned_content": cleaned_content}
+                return {"error": "Failed to parse JSON response."}
         else:
             return {"error": "Response does not have a 'content' attribute."}
 
     except Exception as e:
         return {"error": f"Error generating summary and quiz: {str(e)}"}
-
 
 def main(youtube_link, num_questions, difficulty):
     transcript, language = get_transcript(youtube_link)
@@ -106,10 +107,8 @@ def main(youtube_link, num_questions, difficulty):
 
     return summary_and_quiz  # Return the generated summary and quiz as a dictionary
 
-
 if __name__ == "__main__":
     if len(sys.argv) != 4:
-        print(json.dumps({"error": "Usage: python app.py <YouTube URL> <Number of Questions> <Difficulty>"}), file=sys.stderr)
         sys.exit(1)
 
     youtube_link = sys.argv[1]
@@ -118,4 +117,8 @@ if __name__ == "__main__":
 
     output = main(youtube_link, num_questions, difficulty)
 
-    print(json.dumps(output))  # Output the final result as JSON
+    # Output the final result as JSON
+    print(json.dumps(output, indent=4))  # Use `indent=4` for pretty printing
+
+
+
