@@ -73,9 +73,9 @@ def generate_summary_and_quiz(transcript, num_questions, language, difficulty):
         """
 
         llm = ChatGroq(
-            model="llama-3.1-70b-versatile",
+            model="llama3-groq-70b-8192-tool-use-preview",
             temperature=0,
-            groq_api_key="APIKEY HERE"   
+            groq_api_key=""
         )
         response = llm.invoke(prompt)
 

@@ -205,7 +205,7 @@
         </div>
 
         <div id="quiz-container">
-            <% quiz.easy.forEach((question, index) => { %>
+            <% quiz.forEach((question, index) => { %>
                 <div class="question" data-index="<%= index %>">
                     <h3>Question <%= index + 1 %></h3>
                     <p><%= question.question %></p>
@@ -225,7 +225,7 @@
     </div>
 
     <script>
-        const quiz = <%- JSON.stringify(quiz.easy) %>;
+        const quiz = <%- JSON.stringify(quiz) %>;
         const quizTime = quiz.length * 60;
         let timeLeft = quizTime;
         let score = 0;
